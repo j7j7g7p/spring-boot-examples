@@ -8,12 +8,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
+import java.util.Properties;
 
 /**
  * Created by summer on 2017/5/4.
@@ -24,7 +26,8 @@ public class MailServiceImpl implements MailService{
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    private JavaMailSender mailSender;
+    private JavaMailSenderImpl mailSender;
+//    private JavaMailSender mailSender;
 
     @Value("${mail.fromMail.addr}")
     private String from;
@@ -42,11 +45,20 @@ public class MailServiceImpl implements MailService{
         message.setTo(to);
         message.setSubject(subject);
         message.setText(content);
+        
+        Properties pro = System.getProperties(); // 下面各项缺一不可
+        pro.put("mail.smtp.auth", "true");
+        pro.put("mail.smtp.ssl.enable", "true");
+        pro.put("mail.smtp.timeout", "25");
+        pro.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        
+//        mailSender.setJavaMailProperties(pro);
 
         try {
             mailSender.send(message);
             logger.info("简单邮件已经发送。");
         } catch (Exception e) {
+        	e.printStackTrace();
             logger.error("发送简单邮件时发生异常！", e);
         }
 
@@ -69,10 +81,16 @@ public class MailServiceImpl implements MailService{
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(content, true);
-
+            Properties pro = System.getProperties(); // 下面各项缺一不可
+            pro.put("mail.smtp.auth", "true");
+            pro.put("mail.smtp.ssl.enable", "true");
+            pro.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            mailSender.setJavaMailProperties(pro);
+            
             mailSender.send(message);
             logger.info("html邮件发送成功");
         } catch (MessagingException e) {
+        	e.printStackTrace();
             logger.error("发送html邮件时发生异常！", e);
         }
     }
@@ -94,12 +112,18 @@ public class MailServiceImpl implements MailService{
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(content, true);
-
+            
             FileSystemResource file = new FileSystemResource(new File(filePath));
-            String fileName = filePath.substring(filePath.lastIndexOf(File.separator));
+            String fileName = filePath.substring(filePath.lastIndexOf(File.separator)+1);
             helper.addAttachment(fileName, file);
             //helper.addAttachment("test"+fileName, file);
 
+            Properties pro = System.getProperties(); // 下面各项缺一不可
+            pro.put("mail.smtp.auth", "true");
+            pro.put("mail.smtp.ssl.enable", "true");
+            pro.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            mailSender.setJavaMailProperties(pro);
+            
             mailSender.send(message);
             logger.info("带附件的邮件已经发送。");
         } catch (MessagingException e) {
@@ -128,7 +152,12 @@ public class MailServiceImpl implements MailService{
 
             FileSystemResource res = new FileSystemResource(new File(rscPath));
             helper.addInline(rscId, res);
-
+            Properties pro = System.getProperties(); // 下面各项缺一不可
+            pro.put("mail.smtp.auth", "true");
+            pro.put("mail.smtp.ssl.enable", "true");
+            pro.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            mailSender.setJavaMailProperties(pro);
+            
             mailSender.send(message);
             logger.info("嵌入静态资源的邮件已经发送。");
         } catch (MessagingException e) {
