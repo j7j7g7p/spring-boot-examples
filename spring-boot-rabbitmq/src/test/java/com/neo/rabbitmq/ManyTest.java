@@ -19,13 +19,19 @@ public class ManyTest {
 
 	@Test
 	public void oneToMany() throws Exception {
-		for (int i=0;i<100;i++){
+		/**
+		 * 一个发送者，N个接受者,经过测试会均匀的将消息发送到N个接收者中
+		 */
+		for (int i=0;i<10;i++){
 			neoSender.send(i);
 		}
 	}
 
 	@Test
 	public void manyToMany() throws Exception {
+		/**
+		 * 接收端仍然会均匀接收到消息
+		 */
 		for (int i=0;i<100;i++){
 			neoSender.send(i);
 			neoSender2.send(i);
